@@ -53,8 +53,8 @@ function v2_OpeningFcn(hObject, eventdata, handles, varargin)
 % varargin   command line arguments to v2 (see VARARGIN)
 
 % Choose default command line output for v2
-
 handles.output = hObject;
+% Used to keep track of number of times Data Collectoin button has been pressed
 handles.button_pressed = 0;
 
 % tutorial message
@@ -66,12 +66,17 @@ drawnow;
 set(handles.CalibrateImageButton,'Visible','Off');
 % Data Collection button is invisible until user has calibrated the image
 set(handles.DataCollectionButton,'Visible','Off');
+% Analyze Data button is invisible until user has collected all data
 set(handles.AnalyzeDataButton,'Visible','Off');
+% popup menu and navigation buttons are invisible until the image has been loaded
 set(handles.popupmenu1,'Visible','Off');
 set(handles.prev,'Visible','Off');
 set(handles.next,'Visible','Off');
+% ROI button is invisible until the image has been calibrated
 set(handles.DefineROIButton,'Visible','Off');
+% for debugging purposes. The proram will autosave all relevant data once analysis is complete.
 set(handles.SaveDataButton,'Visible','Off');
+% the instruction box will display messages, however is not interacterable
 set(handles.InstructionBox,'enable','inactive');
 axes(handles.axes1);
 cla reset;
@@ -94,22 +99,27 @@ function varargout = v2_OutputFcn(hObject, eventdata, handles)
 varargout{1} = handles.output;
 
 % --- Executes on button press in LoadDataButton.
+% Load data button will popup a file loading GUI.
+% Once a DICOM file has been selected, the first image will be loaded.
+% Correct buttons necessary for next analysis will be visible.
 function LoadDataButton_Callback(hObject, eventdata, handles)
 % hObject    handle to LoadDataButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-% store current directory so we can come back and script will keep working
-scr_dir = cd;
 
 handles.output = hObject;
 
+% store current directory so we can come back and script will keep working
+scr_dir = cd;
+
 % get dicom file directory
 [filename, pathname, ~] = uigetfile('*.dcm','Select the first dicom file in the stack');
-% go to dicom file location and read
+% go to dicom file location and read the file
 cd(pathname);
 handles.stack = dicomread(filename);
-handles.stacksize = size(handles.stack);
+handles.stacksize = size(handles.stack); % read size of the stack
 handles.stacksize = handles.stacksize(4);
+
 % go back to .m file location
 cd(scr_dir);
 
@@ -118,26 +128,35 @@ handles.slide = 1;
 axes(handles.axes1);
 imshow(handles.stack(:,:,:,handles.slide)); hold on;
 
+% initialize slider with correct values
 set(handles.slider1,'min',1);
 set(handles.slider1,'max',handles.stacksize);
 set(handles.slider1,'Value',handles.slide);
 
+% get filename for future data saving operations
 handles.filename = filename;
 filename = filename(1,1:end-4);
 filename = strcat('Subject: ',filename);
-set(handles.FileText,'String',filename);
+set(handles.FileText,'String',filename); % displays current dataset name on top
+
+% popup menu and navigation buttons are visible
 set(handles.popupmenu1,'Visible','On');
 set(handles.prev,'Visible','On');
 set(handles.next,'Visible','On');
-set(handles.SaveDataButton,'Visible','On');
+% for debugging purposes
+set(handles.SaveDataButton,'Visible','Off');
+
+% Display current image number
 handles.ImageCountString = strcat('Image Number: ',num2str(handles.slide));
 set(handles.ImageCountText,'String',handles.ImageCountString);
 
+% next instruction displayed on the instruction box
 handles.Instruction = "Please select data collection mode from the drop down menu on the right." + newline + handles.Instruction;
 set(handles.InstructionBox, 'String', handles.Instruction);
 % set(handles.text3, 'String', 'Notes: Please select data collection mode from the drop down menu on the right.');
 drawnow;
 
+% update GUI
 guidata(hObject,handles);
 
 % --- Executes on button press in prev.
