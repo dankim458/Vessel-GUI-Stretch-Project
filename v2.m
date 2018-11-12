@@ -98,6 +98,7 @@ function varargout = v2_OutputFcn(hObject, eventdata, handles)
 % Get default command line output from handles structure
 varargout{1} = handles.output;
 
+
 % --- Executes on button press in LoadDataButton.
 % Load data button will popup a file loading GUI.
 % Once a DICOM file has been selected, the first image will be loaded.
@@ -153,11 +154,11 @@ set(handles.ImageCountText,'String',handles.ImageCountString);
 % next instruction displayed on the instruction box
 handles.Instruction = "Please select data collection mode from the drop down menu on the right." + newline + handles.Instruction;
 set(handles.InstructionBox, 'String', handles.Instruction);
-% set(handles.text3, 'String', 'Notes: Please select data collection mode from the drop down menu on the right.');
 drawnow;
 
 % update GUI
 guidata(hObject,handles);
+
 
 % --- Executes on button press in prev.
 % Will move to previous image in the dicom stack
@@ -209,9 +210,6 @@ function next_Callback(hObject, eventdata, handles)
 
 if handles.slide == handles.stacksize % if last image, stay on last image
     % do nothing
-    %     axes(handles.axes1);
-    %     cla reset;
-    %     imshow(handles.stack(:,:,:,handles.slide));
 else
     handles.slide = handles.slide + 1; % update slide number
     guidata(hObject, handles);
@@ -261,7 +259,6 @@ end
 
 handles.Instruction = "Please calibrate the image using the Calibration Button." + newline + handles.Instruction;
 set(handles.InstructionBox, 'String', handles.Instruction);
-%set(handles.text3, 'String', 'Notes: Please calibrate the image using the Calibration Button.');
 drawnow;
 
 guidata(hObject,handles);
@@ -301,7 +298,6 @@ zoom off
 
 handles.Instruction = "Press on the major tick marks for calibration." + newline + handles.Instruction;
 set(handles.InstructionBox, 'String', handles.Instruction);
-% set(handles.text3, 'String', 'Notes: Press on the major tick marks for calibration.');
 drawnow;
 
 handles.res_matrix = zeros(2,2);
@@ -313,7 +309,6 @@ hold off;
 
 handles.Instruction = "Please define region of interest (ROI) by clicking on Define ROI button." + newline + handles.Instruction;
 set(handles.InstructionBox, 'String', handles.Instruction);
-% set(handles.text3, 'String', 'Notes: Please define region of interest (ROI) by clicking on Define ROI button. ');
 drawnow;
 
 axes(handles.axes1);
@@ -327,6 +322,7 @@ set(handles.DefineROIButton,'Visible','On');
 guidata(hObject,handles);
 
 % --- Executes on button press in DefineROIButton.
+% Defines the Region of Interest that user will be working in.
 function DefineROIButton_Callback(hObject, eventdata, handles)
 % hObject    handle to DefineROIButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -335,7 +331,6 @@ function DefineROIButton_Callback(hObject, eventdata, handles)
 
 handles.Instruction = "Please define ROI by zooming in on the region of interest. i.e. vessel" + newline + handles.Instruction;
 set(handles.InstructionBox, 'String', handles.Instruction);
-% set(handles.text3, 'String', 'Notes: Please define ROI by zooming in on the region of interest. i.e. vessel');
 drawnow;
 
 h = figure;
@@ -350,21 +345,23 @@ set(handles.DataCollectionButton,'Visible','On');
 
 handles.Instruction = "Please start collecting data using Data Collection Button." + newline + handles.Instruction;
 set(handles.InstructionBox, 'String', handles.Instruction);
-% set(handles.text3, 'String', 'Notes: Please start collecting data using Data Collection Button. ');
 drawnow;
 guidata(hObject,handles);
 
 
 % --- Executes on button press in DataCollectionButton.
+% Starts data collection process. Depending on the data type selected on the drop down menu,
+% the collection process will be different.
 function DataCollectionButton_Callback(hObject, eventdata, handles)
 % hObject    handle to DataCollectionButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
 switch handles.case
-    % case 1: logitudinal
-    % case 2: cross-sectional
+    % case 2: logitudinal
+    % case 3: cross-sectional
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    % case start for longitudinal
     case 2
 
         handles.button_pressed = handles.button_pressed + 1;
@@ -466,8 +463,9 @@ switch handles.case
                 msgbox(WarningString,'Warning','warn');
             end
         end
-
+        % case end for longitudinal
         %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+        % case start for cross-sectional
     case 3
         handles.button_pressed = handles.button_pressed + 1;
 
@@ -572,7 +570,8 @@ switch handles.case
                 msgbox(WarningString,'Warning','warn');
             end
         end
-
+% case end for cross-sectional
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 end
 guidata(hObject,handles);
 
@@ -588,6 +587,8 @@ save(file);
 cd(scr_dir);
 
 % --- Executes on slider movement.
+% controls the image number like prev and next button, but allows for faster
+% browsing by moving the slider
 function slider1_Callback(hObject, eventdata, handles)
 % hObject    handle to slider1 (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
@@ -627,7 +628,8 @@ if isequal(get(hObject,'BackgroundColor'), get(0,'defaultUicontrolBackgroundColo
     set(hObject,'BackgroundColor',[.9 .9 .9]);
 end
 
-
+% Data Analysis is performed in this call back. Types of output data will vary
+% depending on data type selected in the drop down menu.
 function AnalyzeDataButton_Callback(hObject, eventdata, handles)
 % hObject    handle to AnalyzeDataButton (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
