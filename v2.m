@@ -842,8 +842,8 @@ switch handles.case
 
         % making the video
 
-        writerObj = VideoWriter(strcat(foldername,'/',handles.filename(1,1:end-4,...
-            '_diameters.avi')));
+        writerObj = VideoWriter(strcat(foldername,'/',handles.filename(1,1:end-4),...
+            '_diameters'),'MPEG-4');
         open(writerObj);
 
         for m = 1:size(handles.stack,4)
